@@ -28,3 +28,5 @@ template<typename T> std::ostream& operator<< (std::ostream& out, const std::vec
 
     return out;
 }
+
+long get_time_ms();

@@ -8,62 +8,35 @@
 #include <utils.hpp>
 
 mpz_vector rho(mpz_class n) {
-	std::vector<std::pair<mpz_class, bool>> factors;
-	std::vector<std::pair<mpz_class, bool>> tmp_factors;
+	if(mpz_probab_prime_p(n.get_mpz_t(), 15) != 0) {
+		return mpz_vector(0);
+	}
+
+	mpz_vector factors(0);
+
+	rho_recursive(n, &factors);
+
+	std::sort(factors.begin(), factors.end());
+
+	return factors;
+}
+
+void rho_recursive(mpz_class n, mpz_vector *factors) {
+	if(mpz_probab_prime_p(n.get_mpz_t(), 15) != 0) {
+		return;
+	}
 
 	mpz_vector factor_pair = single_pair_rho(n);
+	factors->erase(std::remove(factors->begin(), factors->end(), n), factors->end());
 
-	for(mpz_class raw_factor : factor_pair) {
-		if(mpz_probab_prime_p(raw_factor.get_mpz_t(), 15) == 0) {
-			factors.push_back(std::make_pair(raw_factor, false));
-		}else {
-			factors.push_back(std::make_pair(raw_factor, true));
-		}
+	for(mpz_class factor : factor_pair) {
+		factors->push_back(factor);
+		rho_recursive(factor, factors);
 	}
-
-	tmp_factors = factors;
-
-	bool is_factored = false;
-	while(!is_factored) {
-		is_factored = true;
-
-		for(size_t i = 0; i < tmp_factors.size(); i++) {
-			std::pair<mpz_class, bool> factor = tmp_factors[i];
-
-			if(factor.second == true) {
-				continue;
-			}else {
-				is_factored = false;
-
-				factor_pair = single_pair_rho(factor.first);
-
-				factors.erase(factors.begin() + i);
-
-				for(mpz_class raw_factor : factor_pair) {
-					if(mpz_probab_prime_p(raw_factor.get_mpz_t(), 15) == 0) {
-						factors.push_back(std::make_pair(raw_factor, false));
-					}else {
-						factors.push_back(std::make_pair(raw_factor, true));
-					}
-				}
-			}
-		}
-
-		tmp_factors = factors;
-	}
-
-	mpz_vector raw_factors(factors.size());
-	for(size_t i = 0; i < factors.size(); i++) {
-		raw_factors[i] = factors[i].first;
-	}
-
-	std::sort(raw_factors.begin(), raw_factors.end());
-
-	return raw_factors;
 }
 
 mpz_vector single_pair_rho(mpz_class n) {
-	mpz_class x(3);
+	mpz_class x(2);
 	mpz_class y(2);
 	mpz_class d(1);
 
